@@ -1,0 +1,85 @@
+diff --git a/node_modules/react-dom/cjs/react-dom.development.js b/node_modules/react-dom/cjs/react-dom.development.js
+index 47c439d..78e5f0e 100644
+--- a/node_modules/react-dom/cjs/react-dom.development.js
++++ b/node_modules/react-dom/cjs/react-dom.development.js
+@@ -21817,49 +21817,47 @@ function commitDeletionEffectsOnFiber(finishedRoot, nearestMountedAncestor, dele
+     case MemoComponent:
+     case SimpleMemoComponent:
+       {
+-        if (!offscreenSubtreeWasHidden) {
+-          var updateQueue = deletedFiber.updateQueue;
++        var updateQueue = deletedFiber.updateQueue;
+ 
+-          if (updateQueue !== null) {
+-            var lastEffect = updateQueue.lastEffect;
++        if (updateQueue !== null) {
++          var lastEffect = updateQueue.lastEffect;
+ 
+-            if (lastEffect !== null) {
+-              var firstEffect = lastEffect.next;
+-              var effect = firstEffect;
++          if (lastEffect !== null) {
++            var firstEffect = lastEffect.next;
++            var effect = firstEffect;
+ 
+-              do {
+-                var tag = effect.tag;
+-                var inst = effect.inst;
+-                var destroy = inst.destroy;
++            do {
++              var tag = effect.tag;
++              var inst = effect.inst;
++              var destroy = inst.destroy;
++
++              if (destroy !== undefined) {
++                if ((tag & Insertion) !== NoFlags) {
++                  inst.destroy = undefined;
++                  safelyCallDestroy(deletedFiber, nearestMountedAncestor, destroy);
++                } else if (!offscreenSubtreeWasHidden && (tag & Layout) !== NoFlags) {
++                  {
++                    markComponentLayoutEffectUnmountStarted(deletedFiber);
++                  }
+ 
+-                if (destroy !== undefined) {
+-                  if ((tag & Insertion) !== NoFlags) {
++                  if (shouldProfile(deletedFiber)) {
++                    startLayoutEffectTimer();
+                     inst.destroy = undefined;
+                     safelyCallDestroy(deletedFiber, nearestMountedAncestor, destroy);
+-                  } else if ((tag & Layout) !== NoFlags) {
+-                    {
+-                      markComponentLayoutEffectUnmountStarted(deletedFiber);
+-                    }
+-
+-                    if (shouldProfile(deletedFiber)) {
+-                      startLayoutEffectTimer();
+-                      inst.destroy = undefined;
+-                      safelyCallDestroy(deletedFiber, nearestMountedAncestor, destroy);
+-                      recordLayoutEffectDuration(deletedFiber);
+-                    } else {
+-                      inst.destroy = undefined;
+-                      safelyCallDestroy(deletedFiber, nearestMountedAncestor, destroy);
+-                    }
++                    recordLayoutEffectDuration(deletedFiber);
++                  } else {
++                    inst.destroy = undefined;
++                    safelyCallDestroy(deletedFiber, nearestMountedAncestor, destroy);
++                  }
+ 
+-                    {
+-                      markComponentLayoutEffectUnmountStopped();
+-                    }
++                  {
++                    markComponentLayoutEffectUnmountStopped();
+                   }
+                 }
++              }
+ 
+-                effect = effect.next;
+-              } while (effect !== firstEffect);
+-            }
++              effect = effect.next;
++            } while (effect !== firstEffect);
+           }
+         }
+ 
